@@ -2,9 +2,10 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Reservation;
 use Filament\Tables;
 use Filament\Tables\Table;
+use App\Models\Reservation;
+use Filament\Notifications\Notification;
 use Filament\Widgets\TableWidget as BaseWidget;
 
 class TodayReservationsTable extends BaseWidget
@@ -32,7 +33,7 @@ class TodayReservationsTable extends BaseWidget
                     ->label('Customer'),
                 Tables\Columns\TextColumn::make('time_slot')
                     ->label('Time Slot')
-                    ->state(fn (Reservation $record): string => $record->start_time->format('H:i') . ' - ' . $record->end_time->format('H:i')),
+                    ->state(fn(Reservation $record): string => $record->start_time->format('H:i') . ' - ' . $record->end_time->format('H:i')),
                 Tables\Columns\BadgeColumn::make('status')
                     ->colors([
                         'warning' => 'pending',
@@ -41,8 +42,52 @@ class TodayReservationsTable extends BaseWidget
                         'gray' => 'completed',
                     ])
                     ->label('Status'),
+            ])->actions([
+                Tables\Actions\ActionGroup::make([
+                
+                    Tables\Actions\Action::make('confirm')
+                        ->action(function (Reservation $record) {
+                            $record->update(['status' => 'confirmed']);
+                            Notification::make()
+                                ->title('Reservation Confirmed')
+                                ->body("Reservation {$record->reservation_code} has been confirmed.")
+                                ->success()
+                                ->send();
+                        
+                        })
+                        ->requiresConfirmation()
+                        ->color('success')
+                        ->icon('heroicon-o-check')
+                        ->visible(fn(Reservation $record) => $record->status === 'pending'),
+                    
+                    Tables\Actions\Action::make('cancel')
+                        ->action(function (Reservation $record) {
+                            $record->update(['status' => 'cancelled']);
+                            Notification::make()
+                                ->title('Reservation Cancelled')
+                                ->body("Reservation {$record->reservation_code} has been cancelled.")
+                                ->warning()
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->color('danger')
+                        ->icon('heroicon-o-x-mark')
+                        ->visible(fn(Reservation $record) => in_array($record->status, ['pending', 'confirmed'])),
+                    Tables\Actions\Action::make('completed')
+                        ->action(function (Reservation $record) {
+                            $record->update(['status' => 'completed']);
+                            Notification::make()
+                                ->title('Reservation Completed')
+                                ->body("Reservation {$record->reservation_code} has been marked as completed.")
+                                ->warning()
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->color('success')
+                        ->icon('heroicon-o-check-badge')
+                        ->visible(fn(Reservation $record) => in_array($record->status, ['pending', 'confirmed'])),
+                ]),
             ])
             ->paginated(false);
     }
 }
-

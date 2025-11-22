@@ -1,15 +1,11 @@
 <x-filament-panels::page>
-    {{-- Inisialisasi Alpine component untuk real-time clock --}}
     <div 
         x-data="{ 
-            // Inisialisasi waktu awal dari PHP/Server
             currentTime: '{{ \Carbon\Carbon::now()->format('H:i:s T') }}',
 
-            // Fungsi untuk memperbarui waktu setiap detik menggunakan JavaScript
             updateTime() {
                 const now = new Date();
                 
-                // Format jam (24-jam), menit, dan detik dengan leading zero
                 const hours = String(now.getHours()).padStart(2, '0');
                 const minutes = String(now.getMinutes()).padStart(2, '0');
                 const seconds = String(now.getSeconds()).padStart(2, '0');
@@ -17,7 +13,7 @@
                 // Mendapatkan singkatan zona waktu dari browser (mungkin tidak selalu akurat, jadi diubah ke 'Local' jika tidak ada)
                 const timezone = now.toLocaleTimeString('en-us', { timeZoneName:'short' }).split(' ')[2] || 'Local';
 
-                this.currentTime = `${hours}:${minutes}:${seconds} ${timezone}`;
+                this.currentTime = `${hours}:${minutes}:${seconds}`;
             }
         }"
         x-init="
@@ -30,7 +26,7 @@
             Current Time (Real-Time)
         </h2>
         {{-- Mengikat elemen ini ke variabel Alpine.js `currentTime` --}}
-        <p x-text="currentTime" class="text-4xl font-bold text-primary-600 dark:text-primary-400">
+        <p x-text="currentTime" class="text-xl font-bold text-primary-600 dark:text-primary-400">
             </p>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
            
