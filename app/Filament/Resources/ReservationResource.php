@@ -154,7 +154,7 @@ class ReservationResource extends Resource
                             ->label('Include Equipment Rental')
                             ->reactive()
                             ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                $equipmentFee = $state ? 50000 : 0;
+                                $equipmentFee = $state ? 150000 : 0;
                                 $set('equipment_fee', $equipmentFee);
                                 $duration = $get('duration_hours') ?? 1;
                                 $set('total_price', $duration * $get('price_per_hour') + $equipmentFee);
